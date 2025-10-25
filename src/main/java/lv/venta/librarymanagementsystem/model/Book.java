@@ -1,0 +1,103 @@
+package lv.venta.librarymanagementsystem.model;
+
+import java.util.ArrayList;
+import java.util.List;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@Entity
+@Table(name = "books")
+public class Book {
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
+
+	@Column(name = "isbn", length = 50, nullable = false, unique = true)
+	private String isbn;
+
+	@Column(name = "name", length = 100, nullable = false)
+	private String name;
+
+	@Column(name = "description", length = 250, nullable = false)
+	private String description;
+
+	@Column(name = "coverType")
+	@Enumerated(EnumType.STRING)
+	private CoverType coverType;
+	
+	@Column(name = "language")
+	@Enumerated(EnumType.STRING)
+	private Language language;
+
+	@ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+	@JoinTable(name = "books_authors", joinColumns = { @JoinColumn(name = "book_id") }, inverseJoinColumns = {
+			@JoinColumn(name = "author_id") })
+	private List<Author> authors = new ArrayList<>();
+
+	@ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+	@JoinTable(name = "books_categories", joinColumns = { @JoinColumn(name = "book_id") }, inverseJoinColumns = {
+			@JoinColumn(name = "category_id") })
+	private List<Category> categories = new ArrayList<>();
+
+	@ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+	@JoinTable(name = "books_publishers", joinColumns = { @JoinColumn(name = "book_id") }, inverseJoinColumns = {
+			@JoinColumn(name = "publisher_id") })
+	private List<Publisher> publishers = new ArrayList<>();
+
+	public Book(String isbn, String name, String description, CoverType coverType, Language language) {
+		this.isbn = isbn;
+		this.name = name;
+		this.description = description;
+		this.coverType = coverType;
+		this.language = language;
+	}
+
+	public void addAuthors(Author author) {
+		this.authors.add(author);
+		author.getBooks().add(this);
+	}
+
+	public void removeAuthors(Author author) {
+		this.authors.remove(author);
+		author.getBooks().remove(this);
+	}
+
+	public void addCategories(Category category) {
+		this.categories.add(category);
+		category.getBooks().add(this);
+	}
+
+	public void removeCategories(Category category) {
+		this.categories.remove(category);
+		category.getBooks().remove(this);
+	}
+
+	public void addPublishers(Publisher publisher) {
+		this.publishers.add(publisher);
+		publisher.getBooks().add(this);
+	}
+
+	public void removePublishers(Publisher publisher) {
+		this.publishers.remove(publisher);
+		publisher.getBooks().remove(this);
+	}
+
+}
